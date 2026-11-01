@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server"
+import { auth, Organization } from "@clerk/nextjs/server"
 import {
   Empty,
   EmptyDescription,
@@ -7,9 +7,9 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty"
 import Image from "next/image"
-import { UserButton } from "@clerk/nextjs"
+import { OrganizationSwitcher, UserButton } from "@clerk/nextjs"
 
-export default async function Page() {
+const Page = async () => {
   await auth.protect({ unauthenticatedUrl: "/sign-in" })
   return (
     <div className="flex min-h-svh flex-col items-center justify-center gap-6">
@@ -27,7 +27,8 @@ export default async function Page() {
           </EmptyDescription>
         </EmptyHeader>
       </Empty>
-      <UserButton />
     </div>
   )
 }
+
+export default Page
