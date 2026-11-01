@@ -17,10 +17,9 @@ import {
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import Image from "next/image"
-import { CoinsIcon, SquarePenIcon } from "lucide-react"
+import { CoinsIcon, MessageSquareIcon, SquarePenIcon } from "lucide-react"
 import { Empty, EmptyDescription } from "./ui/empty"
 import { OrganizationSwitcher, UserButton } from "@clerk/nextjs"
-import { Organization } from "@clerk/nextjs/server"
 
 export const Appsidebar = ({
   ...Props
@@ -28,9 +27,12 @@ export const Appsidebar = ({
   const pathname = usePathname()
 
   return (
-    <Sidebar {...Props}>
-      <SidebarHeader className="flex-row items-center justify-between">
-        <Link href="/" className="flex items-center gap-2">
+    <Sidebar collapsible="icon" {...Props}>
+      <SidebarHeader className="flex-row items-center justify-between group-data-[collapsible=icon]:justify-center">
+        <Link
+          href="/"
+          className="flex items-center gap-2 group-data-[collapsible=icon]:hidden"
+        >
           <Image
             src="/logo.svg"
             alt="logo"
@@ -59,11 +61,18 @@ export const Appsidebar = ({
         <SidebarGroup>
           <SidebarGroupLabel>Recent Games</SidebarGroupLabel>
           <SidebarGroupContent>
-            <Empty className="border p-4">
+            <Empty className="border p-2 group-data-[collapsible=icon]:hidden">
               <EmptyDescription className="text-xs">
                 Your games will live here
               </EmptyDescription>
             </Empty>
+            <SidebarMenu className="hidden group-data-[collapsible=icon]:flex">
+              <SidebarMenuItem>
+                <SidebarMenuButton>
+                  <MessageSquareIcon />
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
@@ -77,19 +86,21 @@ export const Appsidebar = ({
             <SidebarMenuBadge>$1.00</SidebarMenuBadge>
           </SidebarMenuItem>
         </SidebarMenu>
-        <div className="flex items-center justify-center gap-2">
-          <OrganizationSwitcher
-            appearance={{
-              elements: {
-                rootBox: "w-full! max-w-full",
-                organizationSwitcherTrigger:
-                  "w-full! max-w-full justify-between!",
-                organizationPreview: "min-w-0",
-                organizationPreviewTextContainer: "min-w-0",
-                organizationPreviewMainIdentifier: "truncate",
-              },
-            }}
-          />
+        <div className="flex items-center justify-center gap-2 px-2 group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
+          <div className="min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
+            <OrganizationSwitcher
+              appearance={{
+                elements: {
+                  rootBox: "w-full! max-w-full",
+                  organizationSwitcherTrigger:
+                    "w-full! max-w-full justify-between!",
+                  organizationPreview: "min-w-0",
+                  organizationPreviewTextContainer: "min-w-0",
+                  organizationPreviewMainIdentifier: "truncate",
+                },
+              }}
+            />
+          </div>
           <UserButton />
         </div>
       </SidebarFooter>
