@@ -24,15 +24,20 @@ export const GameChat = ({ gameId, initialMessages }: Props) => {
     }),
   })
 
-  // A new game starts with only the user's prompt; ask the AI to answer it once.
-  const hasRequestedReply = useRef(false)
+  // A new game starts with only the user's prompt; ask the AI to answer it.
+  // Read once on mount so later server refreshes can't trigger a second reply.
+  const needsReply = useRef(initialMessages.at(-1)?.role === "user")
   useEffect(() => {
-    if (hasRequestedReply.current) return
-    hasRequestedReply.current = true
-    if (initialMessages.at(-1)?.role === "user") {
-      regenerate()
+    if (!needsReply.current) return
+    needsReply.current = false
+    regenerate()
+
+    // useChat aborts the request on unmount. Strict Mode mounts twice in dev,
+    // so re-arm the flag and let the next mount send the request again.
+    return () => {
+      needsReply.current = true
     }
-  }, [initialMessages, regenerate])
+  }, [regenerate])
 
   const isBusy = status === "submitted" || status === "streaming"
 

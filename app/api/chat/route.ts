@@ -40,7 +40,9 @@ export async function POST(req: Request) {
       stream: result.stream,
       originalMessages: history,
       generateMessageId: createIdGenerator({ prefix: "msg", size: 16 }),
-      onEnd: async ({ messages }) => {
+      onEnd: async ({ messages, isAborted, isCancelled }) => {
+        // Don't store a half-finished reply; the next visit asks for a fresh one
+        if (isAborted || isCancelled) return
         await saveMessages(game.id, messages)
       },
     }),
