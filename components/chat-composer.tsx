@@ -12,13 +12,19 @@ import {
   InputGroupTextarea,
 } from "./ui/input-group"
 import { Button } from "./ui/button"
-import { createGame } from "@/lib/games/action"
-export const ChatComposer = () => {
+import { createGame, sendMessage } from "@/lib/games/action"
+
+interface Props {
+  // when set, the composer adds a message to this game instead of creating a new one
+  gameId?: string
+}
+
+export const ChatComposer = ({ gameId }: Props) => {
   const models = ["Kimi 3", "Claude Opus 5", "Gpt-5", "Gemini 3 Pro"]
 
   return (
     <div className="flex w-full flex-col gap-6">
-      <form action={createGame}>
+      <form action={gameId ? sendMessage.bind(null, gameId) : createGame}>
         <InputGroup className="bg-popover">
           <InputGroupTextarea
             name="prompt"

@@ -31,3 +31,14 @@ export const createGame = async (formData: FormData) => {
   revalidatePath("/", "layout")
   redirect(`/games/${game.id}`)
 }
+
+export const sendMessage = async (gameId: string, formData: FormData) => {
+  const prompt = formData.get("prompt")
+  const value = typeof prompt === "string" ? prompt.trim() : ""
+
+  if (!value) {
+    return
+  }
+
+  console.log({ gameId, value })
+}

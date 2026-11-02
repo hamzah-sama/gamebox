@@ -14,7 +14,7 @@ const Page = async ({ params }: Props) => {
         {/* fades messages out as they scroll beneath the composer */}
         <div className="pointer-events-none absolute inset-x-0 -top-8 h-8 bg-linear-to-t from-background to-transparent" />
         <div className="mx-auto w-full max-w-3xl px-4 pb-4">
-          <ChatComposer />
+          <ChatComposer gameId={id} />
         </div>
       </div>
     </div>
