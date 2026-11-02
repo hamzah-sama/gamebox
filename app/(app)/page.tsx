@@ -1,13 +1,14 @@
-import { auth, Organization } from "@clerk/nextjs/server"
+import { auth } from "@clerk/nextjs/server"
 import {
   Empty,
+  EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty"
 import Image from "next/image"
-import { OrganizationSwitcher, UserButton } from "@clerk/nextjs"
+import { ChatComposer } from "@/components/chat-composer"
 
 const Page = async () => {
   await auth.protect({ unauthenticatedUrl: "/sign-in" })
@@ -26,6 +27,9 @@ const Page = async () => {
             own words. If you can describe it, you can play it.
           </EmptyDescription>
         </EmptyHeader>
+        <EmptyContent className="max-w-2xl">
+          <ChatComposer />
+        </EmptyContent>
       </Empty>
     </div>
   )
