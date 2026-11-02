@@ -1,10 +1,11 @@
 "use server"
 
 import { auth } from "@clerk/nextjs/server"
+import { generateId } from "ai"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { db } from "../db"
-import { games } from "../db/schema"
+import { games, messages } from "../db/schema"
 
 export const createGame = async (formData: FormData) => {
   const { orgId } = await auth()
@@ -28,17 +29,14 @@ export const createGame = async (formData: FormData) => {
     })
     .returning({ id: games.id })
 
+  // The prompt becomes the first message; the game page asks the AI to reply to it.
+  await db.insert(messages).values({
+    id: generateId(),
+    gameId: game.id,
+    role: "user",
+    parts: [{ type: "text", text: title }],
+  })
+
   revalidatePath("/", "layout")
   redirect(`/games/${game.id}`)
-}
-
-export const sendMessage = async (gameId: string, formData: FormData) => {
-  const prompt = formData.get("prompt")
-  const value = typeof prompt === "string" ? prompt.trim() : ""
-
-  if (!value) {
-    return
-  }
-
-  console.log({ gameId, value })
 }

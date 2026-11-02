@@ -1,5 +1,6 @@
-import { ChatComposer } from "@/components/chat-composer"
-import { ChatThread } from "@/components/chat-tread"
+import { notFound } from "next/navigation"
+import { GameChat } from "@/components/game-chat"
+import { getGame, listMessages } from "@/lib/games/queries"
 
 interface Props {
   params: Promise<{ id: string }>
@@ -7,16 +8,17 @@ interface Props {
 
 const Page = async ({ params }: Props) => {
   const { id } = await params
+  const game = await getGame(id)
+
+  if (!game) {
+    notFound()
+  }
+
+  const messages = await listMessages(game.id)
+
   return (
     <div className="flex h-svh flex-col py-4">
-      <ChatThread />
-      <div className="relative shrink-0">
-        {/* fades messages out as they scroll beneath the composer */}
-        <div className="pointer-events-none absolute inset-x-0 -top-8 h-8 bg-linear-to-t from-background to-transparent" />
-        <div className="mx-auto w-full max-w-3xl px-4 pb-4">
-          <ChatComposer gameId={id} />
-        </div>
-      </div>
+      <GameChat key={game.id} gameId={game.id} initialMessages={messages} />
     </div>
   )
 }

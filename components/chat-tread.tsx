@@ -1,4 +1,5 @@
 import Image from "next/image"
+import type { ChatStatus, UIMessage } from "ai"
 import { Message, MessageAvatar, MessageContent } from "./ui/message"
 import {
   MessageScroller,
@@ -9,67 +10,32 @@ import {
 } from "./ui/message-scroller"
 import { Bubble, BubbleContent } from "./ui/bubble"
 
-type Message = {
-  id: string
-  role: "user" | "assistant"
-  content: string
+interface Props {
+  messages: UIMessage[]
+  status: ChatStatus
+  error?: Error
 }
-export const ChatThread = () => {
-  const messages: Message[] = [
-    {
-      id: "1",
-      role: "user",
-      content: "Hello, how are you?",
-    },
-    {
-      id: "2",
-      role: "assistant",
-      content: "I'm doing great! How can I help you today?",
-    },
-    {
-      id: "3",
-      role: "user",
-      content: "Can you explain what React is?",
-    },
-    {
-      id: "4",
-      role: "assistant",
-      content: "React is a JavaScript library for building user interfaces.",
-    },
-    {
-      id: "5",
-      role: "user",
-      content: "What are React components?",
-    },
-    {
-      id: "6",
-      role: "assistant",
-      content:
-        "Components are reusable pieces of UI that you can compose to build an application.",
-    },
-    {
-      id: "7",
-      role: "user",
-      content: "What is the difference between props and state?",
-    },
-    {
-      id: "8",
-      role: "assistant",
-      content:
-        "Props are data passed from a parent component, while state is data managed internally by a component.",
-    },
-    {
-      id: "9",
-      role: "user",
-      content: "Can you give me a simple example?",
-    },
-    {
-      id: "10",
-      role: "assistant",
-      content:
-        "Sure! A button component can receive its label through props and manage its click count using state.",
-    },
-  ]
+
+const getText = (message: UIMessage) =>
+  message.parts.map((part) => (part.type === "text" ? part.text : "")).join("")
+
+const Avatar = () => (
+  <MessageAvatar className="size-8 self-start rounded-lg bg-transparent">
+    <Image
+      src="/logo.svg"
+      height={32}
+      width={32}
+      alt="logo"
+      className="size-8"
+    />
+  </MessageAvatar>
+)
+
+export const ChatThread = ({ messages, status, error }: Props) => {
+  // show a placeholder until the first token of the reply arrives
+  const isWaiting =
+    status === "submitted" ||
+    (status === "streaming" && messages.at(-1)?.role !== "assistant")
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -82,17 +48,7 @@ export const ChatThread = () => {
                   <Message
                     align={message.role === "assistant" ? "start" : "end"}
                   >
-                    {message.role === "assistant" && (
-                      <MessageAvatar className="size-8 self-start rounded-lg bg-transparent">
-                        <Image
-                          src="/logo.svg"
-                          height={32}
-                          width={32}
-                          alt="logo"
-                          className="size-8"
-                        />
-                      </MessageAvatar>
-                    )}
+                    {message.role === "assistant" && <Avatar />}
                     <MessageContent>
                       <Bubble
                         variant={
@@ -100,12 +56,33 @@ export const ChatThread = () => {
                         }
                         align={message.role === "user" ? "end" : "start"}
                       >
-                        <BubbleContent>{message.content}</BubbleContent>
+                        <BubbleContent className="whitespace-pre-wrap">
+                          {getText(message)}
+                        </BubbleContent>
                       </Bubble>
                     </MessageContent>
                   </Message>
                 </MessageScrollerItem>
               ))}
+              {isWaiting && (
+                <MessageScrollerItem messageId="pending">
+                  <Message align="start">
+                    <Avatar />
+                    <MessageContent>
+                      <Bubble variant="ghost" align="start">
+                        <BubbleContent className="animate-pulse text-muted-foreground">
+                          Thinking…
+                        </BubbleContent>
+                      </Bubble>
+                    </MessageContent>
+                  </Message>
+                </MessageScrollerItem>
+              )}
+              {error && (
+                <p className="text-center text-sm text-destructive">
+                  Something went wrong. Please try again.
+                </p>
+              )}
             </MessageScrollerContent>
           </MessageScrollerViewport>
         </MessageScroller>
