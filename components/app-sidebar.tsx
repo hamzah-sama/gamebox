@@ -20,10 +20,13 @@ import Image from "next/image"
 import { CoinsIcon, MessageSquareIcon, SquarePenIcon } from "lucide-react"
 import { Empty, EmptyDescription } from "./ui/empty"
 import { OrganizationSwitcher, UserButton } from "@clerk/nextjs"
+import type { Game } from "@/lib/db/schema"
 
-export const Appsidebar = ({
-  ...Props
-}: React.ComponentProps<typeof Sidebar>) => {
+interface Props extends React.ComponentProps<typeof Sidebar> {
+  games: Game[]
+}
+
+export const Appsidebar = ({ games, ...Props }: Props) => {
   const pathname = usePathname()
 
   return (
@@ -61,11 +64,26 @@ export const Appsidebar = ({
         <SidebarGroup>
           <SidebarGroupLabel>Recent Games</SidebarGroupLabel>
           <SidebarGroupContent>
-            <Empty className="border p-2 group-data-[collapsible=icon]:hidden">
-              <EmptyDescription className="text-xs">
-                Your games will live here
-              </EmptyDescription>
-            </Empty>
+            {games.length === 0 ? (
+              <Empty className="border p-2 group-data-[collapsible=icon]:hidden">
+                <EmptyDescription className="text-xs">
+                  Your games will live here
+                </EmptyDescription>
+              </Empty>
+            ) : (
+              <SidebarMenu className="group-data-[collapsible=icon]:hidden">
+                {games.map((game) => (
+                  <SidebarMenuItem key={game.id}>
+                    <SidebarMenuButton
+                      isActive={pathname === `/game/${game.id}`}
+                      render={<Link href={`/game/${game.id}`} />}
+                    >
+                      {game.title}
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            )}
             <SidebarMenu className="hidden group-data-[collapsible=icon]:flex">
               <SidebarMenuItem>
                 <SidebarMenuButton>
