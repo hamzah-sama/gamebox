@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { db } from "../db"
 import { games } from "../db/schema"
+import { generateGameTitle } from "./title"
 
 export const createGame = async (formData: FormData) => {
   const { orgId } = await auth()
@@ -14,12 +15,14 @@ export const createGame = async (formData: FormData) => {
     throw new Error("An active organization is required to create a game.")
   }
 
-  const prompt = formData.get("prompt")
-  const title = typeof prompt === "string" ? prompt.trim() : ""
+  const value = formData.get("prompt")
+  const prompt = typeof value === "string" ? value.trim() : ""
 
-  if (!title) {
+  if (!prompt) {
     return
   }
+
+  const title = await generateGameTitle(prompt)
 
   // The prompt becomes the first message; the game page asks the AI to reply to it.
   const [game] = await db
@@ -31,7 +34,7 @@ export const createGame = async (formData: FormData) => {
         {
           id: generateId(),
           role: "user",
-          parts: [{ type: "text", text: title }],
+          parts: [{ type: "text", text: prompt }],
         },
       ],
     })
