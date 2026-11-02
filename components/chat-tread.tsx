@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import Image from "next/image"
 import type { ChatStatus, UIMessage } from "ai"
 import { Message, MessageAvatar, MessageContent } from "./ui/message"
@@ -6,7 +7,9 @@ import {
   MessageScrollerContent,
   MessageScrollerItem,
   MessageScrollerProvider,
+  MessageScrollerButton,
   MessageScrollerViewport,
+  useMessageScroller,
 } from "./ui/message-scroller"
 import { Bubble, BubbleContent } from "./ui/bubble"
 
@@ -31,6 +34,20 @@ const Avatar = () => (
   </MessageAvatar>
 )
 
+// Jumps to the bottom whenever the user sends a new message, even if they had scrolled up.
+const ScrollOnSend = ({ messages }: { messages: UIMessage[] }) => {
+  const { scrollToEnd } = useMessageScroller()
+  const lastUserMessageId = messages.findLast(
+    (message) => message.role === "user"
+  )?.id
+
+  useEffect(() => {
+    if (lastUserMessageId) scrollToEnd({ behavior: "smooth" })
+  }, [lastUserMessageId, scrollToEnd])
+
+  return null
+}
+
 export const ChatThread = ({ messages, status, error }: Props) => {
   // show a placeholder until the first token of the reply arrives
   const isWaiting =
@@ -39,7 +56,9 @@ export const ChatThread = ({ messages, status, error }: Props) => {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <MessageScrollerProvider>
+      {/* autoScroll keeps following the streamed reply while the user is at the bottom */}
+      <MessageScrollerProvider autoScroll defaultScrollPosition="end">
+        <ScrollOnSend messages={messages} />
         <MessageScroller className="flex-1">
           <MessageScrollerViewport>
             <MessageScrollerContent className="mx-auto w-full max-w-3xl px-4 py-8">
@@ -85,6 +104,7 @@ export const ChatThread = ({ messages, status, error }: Props) => {
               )}
             </MessageScrollerContent>
           </MessageScrollerViewport>
+          <MessageScrollerButton />
         </MessageScroller>
       </MessageScrollerProvider>
     </div>

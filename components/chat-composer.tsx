@@ -13,7 +13,9 @@ import {
   InputGroupButton,
   InputGroupTextarea,
 } from "./ui/input-group"
+import { useFormStatus } from "react-dom"
 import { Button } from "./ui/button"
+import { Spinner } from "./ui/spinner"
 import { createGame } from "@/lib/games/action"
 
 interface Props {
@@ -23,8 +25,6 @@ interface Props {
 }
 
 export const ChatComposer = ({ onSend, disabled }: Props) => {
-  const models = ["Kimi 3", "Claude Opus 5", "Gpt-5", "Gemini 3 Pro"]
-
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     if (!onSend) return
 
@@ -37,6 +37,22 @@ export const ChatComposer = ({ onSend, disabled }: Props) => {
     form.reset()
   }
 
+  return (
+    <div className="flex w-full flex-col gap-6">
+      <form action={onSend ? undefined : createGame} onSubmit={handleSubmit}>
+        <ComposerFields busy={disabled} />
+      </form>
+    </div>
+  )
+}
+
+const models = ["Kimi 3", "Claude Opus 5", "Gpt-5", "Gemini 3 Pro"]
+
+// Rendered inside the <form> so useFormStatus can see the pending createGame action.
+const ComposerFields = ({ busy }: { busy?: boolean }) => {
+  const { pending } = useFormStatus()
+  const isBusy = pending || busy
+
   // Enter submits, Shift+Enter adds a new line
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (
@@ -45,50 +61,55 @@ export const ChatComposer = ({ onSend, disabled }: Props) => {
       !event.nativeEvent.isComposing
     ) {
       event.preventDefault()
-      event.currentTarget.form?.requestSubmit()
+      if (!isBusy) event.currentTarget.form?.requestSubmit()
     }
   }
 
   return (
-    <div className="flex w-full flex-col gap-6">
-      <form action={onSend ? undefined : createGame} onSubmit={handleSubmit}>
-        <InputGroup className="bg-popover">
-          <InputGroupTextarea
-            name="prompt"
-            required
-            placeholder="Describe the game you want to build..."
-            rows={1}
-            onKeyDown={handleKeyDown}
-            className="field-sizing-content max-h-48 min-h-10"
+    <InputGroup className="bg-popover" aria-busy={isBusy}>
+      <InputGroupTextarea
+        name="prompt"
+        required
+        // readOnly (not disabled) so the value is still submitted with the form
+        readOnly={pending}
+        placeholder="Describe the game you want to build..."
+        rows={1}
+        onKeyDown={handleKeyDown}
+        className="field-sizing-content max-h-48 min-h-10 read-only:opacity-60"
+      />
+      <InputGroupAddon align="block-end">
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            disabled={pending}
+            render={
+              <InputGroupButton>
+                <GripIcon />
+                Kimi 3
+                <ChevronDownIcon />
+              </InputGroupButton>
+            }
           />
-          <InputGroupAddon align="block-end">
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                render={
-                  <InputGroupButton>
-                    <GripIcon />
-                    Kimi 3
-                    <ChevronDownIcon />
-                  </InputGroupButton>
-                }
-              />
-              <DropdownMenuContent>
-                {models.map((model) => (
-                  <DropdownMenuItem key={model}>{model}</DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <Button
-              className="ml-auto rounded-full"
-              size="icon-lg"
-              type="submit"
-              disabled={disabled}
-            >
-              <ArrowUpIcon />
-            </Button>
-          </InputGroupAddon>
-        </InputGroup>
-      </form>
-    </div>
+          <DropdownMenuContent>
+            {models.map((model) => (
+              <DropdownMenuItem key={model}>{model}</DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+        {pending && (
+          <span className="ml-auto text-xs text-muted-foreground">
+            Creating your game…
+          </span>
+        )}
+        <Button
+          className={pending ? "rounded-full" : "ml-auto rounded-full"}
+          size="icon-lg"
+          type="submit"
+          disabled={isBusy}
+          aria-label={isBusy ? "Sending" : "Send"}
+        >
+          {isBusy ? <Spinner /> : <ArrowUpIcon />}
+        </Button>
+      </InputGroupAddon>
+    </InputGroup>
   )
 }
