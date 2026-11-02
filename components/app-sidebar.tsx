@@ -57,7 +57,7 @@ export const Appsidebar = ({ games, ...Props }: Props) => {
                 render={<Link href="/" />}
               >
                 <SquarePenIcon />
-                <span>New Game</span>
+                <span>Create a new game</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
