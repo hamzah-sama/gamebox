@@ -2,6 +2,7 @@
 
 import { auth } from "@clerk/nextjs/server"
 import { revalidatePath } from "next/cache"
+import { redirect } from "next/navigation"
 import { db } from "../db"
 import { games } from "../db/schema"
 
@@ -19,10 +20,14 @@ export const createGame = async (formData: FormData) => {
     return
   }
 
-  await db.insert(games).values({
-    orgId,
-    title,
-  })
+  const [game] = await db
+    .insert(games)
+    .values({
+      orgId,
+      title,
+    })
+    .returning({ id: games.id })
 
   revalidatePath("/", "layout")
+  redirect(`/games/${game.id}`)
 }
