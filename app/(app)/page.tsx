@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/empty"
 import Image from "next/image"
 import { ChatComposer } from "@/components/chat-composer"
+import { ChatSuggestions } from "@/components/chat-suggestions"
 
 const Page = async () => {
   await auth.protect({ unauthenticatedUrl: "/sign-in" })
@@ -29,6 +30,7 @@ const Page = async () => {
         </EmptyHeader>
         <EmptyContent className="max-w-2xl">
           <ChatComposer />
+          <ChatSuggestions />
         </EmptyContent>
       </Empty>
     </div>
