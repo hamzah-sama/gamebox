@@ -21,6 +21,7 @@ import { CoinsIcon, MessageSquareIcon, SquarePenIcon } from "lucide-react"
 import { Empty, EmptyDescription } from "./ui/empty"
 import { OrganizationSwitcher, UserButton } from "@clerk/nextjs"
 import type { Game } from "@/lib/db/schema"
+import { GamePopOver } from "./game-popover"
 
 interface Props extends React.ComponentProps<typeof Sidebar> {
   games: Game[]
@@ -75,8 +76,8 @@ export const Appsidebar = ({ games, ...Props }: Props) => {
                 {games.map((game) => (
                   <SidebarMenuItem key={game.id}>
                     <SidebarMenuButton
-                      isActive={pathname === `/game/${game.id}`}
-                      render={<Link href={`/game/${game.id}`} />}
+                      isActive={pathname === `/games/${game.id}`}
+                      render={<Link href={`/games/${game.id}`} />}
                     >
                       {game.title}
                     </SidebarMenuButton>
@@ -86,9 +87,11 @@ export const Appsidebar = ({ games, ...Props }: Props) => {
             )}
             <SidebarMenu className="hidden group-data-[collapsible=icon]:flex">
               <SidebarMenuItem>
-                <SidebarMenuButton>
-                  <MessageSquareIcon />
-                </SidebarMenuButton>
+                <GamePopOver games={games}>
+                  <SidebarMenuButton>
+                    <MessageSquareIcon />
+                  </SidebarMenuButton>
+                </GamePopOver>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
