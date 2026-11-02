@@ -20,11 +20,11 @@ import Image from "next/image"
 import { CoinsIcon, MessageSquareIcon, SquarePenIcon } from "lucide-react"
 import { Empty, EmptyDescription } from "./ui/empty"
 import { OrganizationSwitcher, UserButton } from "@clerk/nextjs"
-import type { Game } from "@/lib/db/schema"
+import type { GameSummary } from "@/lib/db/schema"
 import { GamePopOver } from "./game-popover"
 
 interface Props extends React.ComponentProps<typeof Sidebar> {
-  games: Game[]
+  games: GameSummary[]
 }
 
 export const Appsidebar = ({ games, ...Props }: Props) => {

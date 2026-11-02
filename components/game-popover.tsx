@@ -6,11 +6,11 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Gamepad2Icon } from "lucide-react"
 import { cn } from "cn"
-import type { Game } from "@/lib/db/schema"
+import type { GameSummary } from "@/lib/db/schema"
 
 interface Props {
   children: React.ReactElement
-  games: Game[]
+  games: GameSummary[]
 }
 
 export const GamePopOver = ({ children, games }: Props) => {

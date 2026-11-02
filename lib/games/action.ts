@@ -5,7 +5,7 @@ import { generateId } from "ai"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { db } from "../db"
-import { games, messages } from "../db/schema"
+import { games } from "../db/schema"
 
 export const createGame = async (formData: FormData) => {
   const { orgId } = await auth()
@@ -21,21 +21,21 @@ export const createGame = async (formData: FormData) => {
     return
   }
 
+  // The prompt becomes the first message; the game page asks the AI to reply to it.
   const [game] = await db
     .insert(games)
     .values({
       orgId,
       title,
+      messages: [
+        {
+          id: generateId(),
+          role: "user",
+          parts: [{ type: "text", text: title }],
+        },
+      ],
     })
     .returning({ id: games.id })
-
-  // The prompt becomes the first message; the game page asks the AI to reply to it.
-  await db.insert(messages).values({
-    id: generateId(),
-    gameId: game.id,
-    role: "user",
-    parts: [{ type: "text", text: title }],
-  })
 
   revalidatePath("/", "layout")
   redirect(`/games/${game.id}`)

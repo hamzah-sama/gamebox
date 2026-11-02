@@ -7,7 +7,7 @@ import {
   type UIMessage,
 } from "ai"
 import { anthropic } from "@ai-sdk/anthropic"
-import { getGame, listMessages, saveMessages } from "@/lib/games/queries"
+import { getGame, saveMessages } from "@/lib/games/queries"
 
 export async function POST(req: Request) {
   // `id` is the game id, `message` is the latest message from useChat
@@ -19,15 +19,15 @@ export async function POST(req: Request) {
     return new Response("Not found", { status: 404 })
   }
 
-  const history = await listMessages(game.id)
+  const history = [...game.messages]
 
   // Persist the new user message before streaming, so it survives a failed reply
   if (
     message?.role === "user" &&
     !history.some((stored) => stored.id === message.id)
   ) {
-    await saveMessages(game.id, [message])
     history.push(message)
+    await saveMessages(game.id, history)
   }
 
   const result = streamText({

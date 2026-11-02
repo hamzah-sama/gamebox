@@ -1,22 +1,29 @@
 import { auth } from "@clerk/nextjs/server"
 import "server-only"
 import { db } from "../db"
-import { and, asc, eq, desc } from "drizzle-orm"
+import { and, eq, desc } from "drizzle-orm"
 import type { UIMessage } from "ai"
-import { games, messages, type Game } from "../db/schema"
+import { games, type Game, type GameSummary } from "../db/schema"
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
-export const listGames = async (): Promise<Game[]> => {
+export const listGames = async (): Promise<GameSummary[]> => {
   const { orgId } = await auth()
 
   if (!orgId) {
     return []
   }
 
+  // Skip the messages column so the sidebar doesn't load every chat history
   return db
-    .select()
+    .select({
+      id: games.id,
+      orgId: games.orgId,
+      title: games.title,
+      createdAt: games.createdAt,
+      updatedAt: games.updatedAt,
+    })
     .from(games)
     .where(eq(games.orgId, orgId))
     .orderBy(desc(games.createdAt))
@@ -39,24 +46,7 @@ export const getGame = async (id: string): Promise<Game | null> => {
   return game ?? null
 }
 
-export const listMessages = async (gameId: string): Promise<UIMessage[]> => {
-  const rows = await db
-    .select()
-    .from(messages)
-    .where(eq(messages.gameId, gameId))
-    .orderBy(asc(messages.createdAt))
-
-  return rows.map(({ id, role, parts }) => ({ id, role, parts }))
-}
-
-// Inserts messages that are not stored yet; existing ids are left untouched.
-export const saveMessages = async (gameId: string, items: UIMessage[]) => {
-  if (items.length === 0) {
-    return
-  }
-
-  await db
-    .insert(messages)
-    .values(items.map(({ id, role, parts }) => ({ id, gameId, role, parts })))
-    .onConflictDoNothing({ target: messages.id })
+// Replaces the stored chat history of a game.
+export const saveMessages = async (gameId: string, messages: UIMessage[]) => {
+  await db.update(games).set({ messages }).where(eq(games.id, gameId))
 }
